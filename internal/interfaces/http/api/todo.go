@@ -8,13 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterActivityController(router fiber.Router, validate *validator.Validate, usecase domains.ActivityUseCase) {
-	// create new activity group
+func RegisterTodoController(router fiber.Router, validate *validator.Validate, usecase domains.TodoUseCase) {
+	// create new todos
 	router.Post("/", func(ctx *fiber.Ctx) error {
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		var req *dtos.ActivityCreateRequest
+		var req *dtos.TodoCreateRequest
 		err := ctx.BodyParser(&req)
 		if err != nil {
 			// failed to parse request body
@@ -38,16 +38,27 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 			})
 
 			res.SetBody(data)
-			res.SetStatusCode(401)
+			res.SetStatusCode(400)
 
 			return nil
 		}
 
-		activity, err := usecase.CreateNew(req)
+		isActivityExist, todo, err := usecase.CreateNew(req)
+		if !isActivityExist {
+			data, _ := json.Marshal(dtos.Response{
+				Status:  "failed",
+				Message: "activity not found",
+			})
+
+			res.SetBody(data)
+			res.SetStatusCode(404)
+			return nil
+		}
+
 		data, _ := json.Marshal(dtos.Response{
 			Status:  "success",
-			Message: "success to create new activity group",
-			Data:    activity,
+			Message: "success to create new todo",
+			Data:    todo,
 		})
 
 		res.SetBody(data)
@@ -55,20 +66,32 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		return nil
 	})
 
-	// get all activity group
+	// get all todos by activity group id
 	router.Get("/", func(ctx *fiber.Ctx) error {
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		listActivity, err := usecase.GetAll()
+		activityId := ctx.Query("activity_group_id", "-1")
+
+		isActivityExist, todos, err := usecase.GetAllByActivityId(activityId)
 		if err != nil {
 			return err
+		}
+		if !isActivityExist {
+			data, _ := json.Marshal(dtos.Response{
+				Status:  "failed",
+				Message: "activity not found",
+			})
+
+			res.SetBody(data)
+			res.SetStatusCode(404)
+			return nil
 		}
 
 		data, _ := json.Marshal(dtos.Response{
 			Status:  "success",
-			Message: "success to get list activity group",
-			Data:    listActivity,
+			Message: "success to get list todo",
+			Data:    todos,
 		})
 
 		res.SetBody(data)
@@ -76,21 +99,21 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		return nil
 	})
 
-	// get activity by id
+	// get todos by id
 	router.Get("/:id", func(ctx *fiber.Ctx) error {
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		id := ctx.Params("id", "0")
-		activity, err := usecase.GetById(id)
+		id := ctx.Params("id", "-1")
+		todo, err := usecase.GetById(id)
 		if err != nil {
 			return err
 		}
 
-		if activity.Title == "" {
+		if todo.Title == "" {
 			data, _ := json.Marshal(dtos.Response{
 				Status:  "failed",
-				Message: "activity not found",
+				Message: "todos not found",
 			})
 
 			res.SetBody(data)
@@ -101,8 +124,8 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 
 		data, _ := json.Marshal(dtos.Response{
 			Status:  "success",
-			Message: "success to get activity",
-			Data:    activity,
+			Message: "success to get todos",
+			Data:    todo,
 		})
 
 		res.SetBody(data)
@@ -110,7 +133,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		return nil
 	})
 
-	// delete activity by id
+	// delete todos by id
 	router.Delete("/:id", func(ctx *fiber.Ctx) error {
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
@@ -124,7 +147,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		if !isDeleted {
 			data, _ := json.Marshal(dtos.Response{
 				Status:  "failed",
-				Message: "activity not found",
+				Message: "todos not found",
 			})
 
 			res.SetBody(data)
@@ -135,7 +158,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 
 		data, _ := json.Marshal(dtos.Response{
 			Status:  "success",
-			Message: "success to delete activity",
+			Message: "success to delete todos",
 		})
 
 		res.SetBody(data)
@@ -143,12 +166,12 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		return nil
 	})
 
-	// update activity group
+	// update todos
 	router.Patch("/:id", func(ctx *fiber.Ctx) error {
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		var req *dtos.ActivityUpdateRequest
+		var req *dtos.TodoUpdateRequest
 		err := ctx.BodyParser(&req)
 		if err != nil {
 			// failed to parse request body
@@ -172,7 +195,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 			})
 
 			res.SetBody(data)
-			res.SetStatusCode(401)
+			res.SetStatusCode(400)
 
 			return nil
 		}
@@ -182,7 +205,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		if !isUpdated {
 			data, _ := json.Marshal(dtos.Response{
 				Status:  "failed",
-				Message: "activity not found",
+				Message: "todo not found",
 			})
 
 			res.SetBody(data)
@@ -192,7 +215,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 
 		data, _ := json.Marshal(dtos.Response{
 			Status:  "success",
-			Message: "success to update activity group",
+			Message: "success to update todo",
 			Data:    activity,
 		})
 

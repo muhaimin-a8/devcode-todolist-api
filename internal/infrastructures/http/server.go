@@ -30,9 +30,9 @@ func CreateServer(ctx context.Context) (*Server, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, host, port, dbname)
 
 	db, err := database.NewDBMySQL(dsn)
-
-	fmt.Println(db, err)
-	fmt.Println(db.Ping())
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// validator
 	validate := validator.New()
@@ -47,15 +47,18 @@ func CreateServer(ctx context.Context) (*Server, error) {
 
 	// repositories
 	activityRepository := repository.NewActivityRepositoryMySQL(db)
+	todoRepository := repository.NewTodoRepositoryMySQL(db)
 
 	// error handling
 	//server.app.Use(recover.New())
 
 	// usecase
 	activityUseCase := usecase.NewActivityUseCase(activityRepository)
+	todoUseCase := usecase.NewTodoUseCase(todoRepository, activityRepository)
 
 	//register router
-	api.RegisterActivityController(server.app.Group("/"), validate, activityUseCase)
+	api.RegisterActivityController(server.app.Group("/activity-groups"), validate, activityUseCase)
+	api.RegisterTodoController(server.app.Group("/todo-items"), validate, todoUseCase)
 
 	return server, nil
 }
