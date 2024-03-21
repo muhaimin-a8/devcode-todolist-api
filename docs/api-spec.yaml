@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: 'DevCode Todolist API'
+  description: 'DevCode Todolist API'
+  version: '1.0.0'
+  contact:
+    name: 'Muhaimin Abdillah'
+    email: 'muhaiminabdillah85@gmail.com'
+  license:
+    name: 'Apache License 2.0'
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /activity-groups:
+    post:
+      tags:
+        - Activity Groups
+      summary: 'create new activity group'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                email:
+                  type: string
+            example:
+              title: 'DevCode Test'
+              email: 'devcode@example.com'
+      responses:
+        201:
+          description: 'success to create new activity group'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      title:
+                        type: string
+                      email:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+              example:
+                status: 'success'
+                message: 'success to create new activity group'
+                title: 'DevCode Test'
+                email: 'devcode@example.com'
+                created_at: '2024-03-20T13:37:05.825Z'
+                updated_at: '2024-03-20T13:37:05.825Z'
