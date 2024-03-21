@@ -37,7 +37,7 @@ run:
 # build: building app to ./bin/devcode_todolist_api
 build:
 	@ echo "building app to ./bin/devcode_todolist_api"
-	cd cmd; go build -o ../bin/coursify
+	cd cmd; go build -o ../bin/devcode_todolist_api
 
 # -------------------------------------------------------------------------------------------
 # Testing
