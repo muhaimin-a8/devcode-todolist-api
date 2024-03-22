@@ -30,7 +30,7 @@ func (t todoRepositoryMySQLImpl) Update(todo domains.Todo) (*domains.Todo, error
 	return &todoFromDB, nil
 }
 
-func (t todoRepositoryMySQLImpl) DeleteById(id string) (isDeleted bool, err error) {
+func (t todoRepositoryMySQLImpl) DeleteById(id int) (isDeleted bool, err error) {
 	res, err := t.DB.Exec("DELETE FROM todos WHERE todo_id = ?", id)
 	if err != nil {
 		return false, err
@@ -44,7 +44,7 @@ func (t todoRepositoryMySQLImpl) DeleteById(id string) (isDeleted bool, err erro
 	return true, nil
 }
 
-func (t todoRepositoryMySQLImpl) GetById(id string) (*domains.Todo, error) {
+func (t todoRepositoryMySQLImpl) GetById(id int) (*domains.Todo, error) {
 	rows, err := t.DB.Query("SELECT * FROM todos WHERE todo_id = ?", id)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (t todoRepositoryMySQLImpl) GetById(id string) (*domains.Todo, error) {
 	return &todoFromDB, err
 }
 
-func (t todoRepositoryMySQLImpl) GetAllByActivityId(activityId string) ([]domains.Todo, error) {
+func (t todoRepositoryMySQLImpl) GetAllByActivityId(activityId int) ([]domains.Todo, error) {
 	rows, err := t.DB.Query("SELECT * FROM todos WHERE activity_group_id = ?", activityId)
 	if err != nil {
 		return nil, err

@@ -3,7 +3,6 @@ package usecase
 import (
 	"devcode-todolist-api/internal/domains"
 	"devcode-todolist-api/internal/dtos"
-	"log"
 )
 
 type todoUseCaseImpl struct {
@@ -11,16 +10,14 @@ type todoUseCaseImpl struct {
 	activityRepository domains.ActivityRepository
 }
 
-func (t *todoUseCaseImpl) UpdateById(id string, req *dtos.TodoUpdateRequest) (isUpdated bool, res *dtos.TodoResponse, err error) {
+func (t *todoUseCaseImpl) UpdateById(id int, req *dtos.TodoUpdateRequest) (isUpdated bool, res *dtos.TodoResponse, err error) {
 	todoFromDB, err := t.todoRepository.GetById(id)
 	if todoFromDB.Title == "" {
 		return false, nil, nil
 	}
 
 	todo := domains.Todo{
-		Id:       todoFromDB.Id,
-		Title:    req.Title,
-		Priority: req.Priority,
+		Id: todoFromDB.Id,
 	}
 	if req.Title != "" {
 		todo.Title = req.Title
@@ -40,17 +37,17 @@ func (t *todoUseCaseImpl) UpdateById(id string, req *dtos.TodoUpdateRequest) (is
 		ActivityGroupId: updatedTodo.ActivityGroupId,
 		Title:           updatedTodo.Title,
 		IsActive:        true,
-		Priority:        updatedTodo.Priority,
+		Priority:        "very-high",
 		CreatedAt:       updatedTodo.CreatedAt,
 		UpdatedAt:       updatedTodo.CreatedAt,
 	}, nil
 }
 
-func (t *todoUseCaseImpl) DeleteById(id string) (isDeleted bool, err error) {
+func (t *todoUseCaseImpl) DeleteById(id int) (isDeleted bool, err error) {
 	return t.todoRepository.DeleteById(id)
 }
 
-func (t *todoUseCaseImpl) GetById(id string) (res *dtos.TodoResponse, err error) {
+func (t *todoUseCaseImpl) GetById(id int) (res *dtos.TodoResponse, err error) {
 	todo, err := t.todoRepository.GetById(id)
 	if err != nil {
 		return nil, err
@@ -67,7 +64,7 @@ func (t *todoUseCaseImpl) GetById(id string) (res *dtos.TodoResponse, err error)
 	}, nil
 }
 
-func (t *todoUseCaseImpl) GetAllByActivityId(activityId string) (isActivityExist bool, res *[]dtos.TodoResponse, err error) {
+func (t *todoUseCaseImpl) GetAllByActivityId(activityId int) (isActivityExist bool, res *[]dtos.TodoResponse, err error) {
 	// check if activity group is exist
 	activity, err := t.activityRepository.GetById(activityId)
 	if err != nil {
@@ -75,7 +72,7 @@ func (t *todoUseCaseImpl) GetAllByActivityId(activityId string) (isActivityExist
 	}
 
 	if activity.Title == "" {
-		return false, nil, nil
+		return false, &[]dtos.TodoResponse{}, nil
 	}
 
 	todos, err := t.todoRepository.GetAllByActivityId(activityId)
@@ -121,14 +118,13 @@ func (t *todoUseCaseImpl) CreateNew(req *dtos.TodoCreateRequest) (bool, *dtos.To
 	if err != nil {
 		return true, nil, err
 	}
-	log.Println(todoFromDB)
 
 	return true, &dtos.TodoResponse{
 		Id:              todoFromDB.Id,
 		ActivityGroupId: todoFromDB.ActivityGroupId,
 		Title:           todoFromDB.Title,
 		IsActive:        true,
-		Priority:        todoFromDB.Priority,
+		Priority:        "very-high",
 		CreatedAt:       todoFromDB.CreatedAt,
 		UpdatedAt:       todoFromDB.CreatedAt,
 	}, nil

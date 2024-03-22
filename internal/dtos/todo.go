@@ -1,14 +1,14 @@
 package dtos
 
 type TodoCreateRequest struct {
-	ActivityGroupId string `json:"activity_group_id" validate:"required"`
+	ActivityGroupId int    `json:"activity_group_id" validate:"required"`
 	Title           string `json:"title" validate:"required,min=2,max=255"`
-	Priority        string `json:"priority" validate:"min=2,max=20"`
+	Priority        string `json:"priority" validate:"max=20,omitempty"`
 }
 
 type TodoResponse struct {
 	Id              int    `json:"id,omitempty"`
-	ActivityGroupId string `json:"activity_group_id,omitempty"`
+	ActivityGroupId int    `json:"activity_group_id,omitempty"`
 	Title           string `json:"title,omitempty"`
 	IsActive        bool   `json:"is_active,omitempty"`
 	Priority        string `json:"priority,omitempty"`

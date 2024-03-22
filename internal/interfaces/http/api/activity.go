@@ -4,8 +4,10 @@ import (
 	"devcode-todolist-api/internal/domains"
 	"devcode-todolist-api/internal/dtos"
 	"encoding/json"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 func RegisterActivityController(router fiber.Router, validate *validator.Validate, usecase domains.ActivityUseCase) {
@@ -33,19 +35,20 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		if err != nil {
 			// failed to validate request body
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: err.Error(),
+				Status:  "Bad Request",
+				Message: "title cannot be null",
+				//Message: err.Error(),
 			})
 
 			res.SetBody(data)
-			res.SetStatusCode(401)
+			res.SetStatusCode(400)
 
 			return nil
 		}
 
 		activity, err := usecase.CreateNew(req)
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to create new activity group",
 			Data:    activity,
 		})
@@ -66,7 +69,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to get list activity group",
 			Data:    listActivity,
 		})
@@ -81,7 +84,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		id := ctx.Params("id", "0")
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
 		activity, err := usecase.GetById(id)
 		if err != nil {
 			return err
@@ -89,8 +92,8 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 
 		if activity.Title == "" {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "activity not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Activity with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -100,7 +103,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to get activity",
 			Data:    activity,
 		})
@@ -115,7 +118,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		id := ctx.Params("id", "-1")
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
 		isDeleted, err := usecase.DeleteById(id)
 		if err != nil {
 			return err
@@ -123,8 +126,8 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 
 		if !isDeleted {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "activity not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Activity with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -134,8 +137,9 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to delete activity",
+			Data:    struct{}{},
 		})
 
 		res.SetBody(data)
@@ -177,12 +181,12 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 			return nil
 		}
 
-		id := ctx.Params("id", "-1")
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
 		isUpdated, activity, _ := usecase.UpdateById(id, req)
 		if !isUpdated {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "activity not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Activity with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -191,7 +195,7 @@ func RegisterActivityController(router fiber.Router, validate *validator.Validat
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to update activity group",
 			Data:    activity,
 		})

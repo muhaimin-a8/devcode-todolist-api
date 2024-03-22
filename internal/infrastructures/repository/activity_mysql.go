@@ -30,7 +30,7 @@ func (a activityRepositoryMySQLImpl) Update(activity domains.Activity) (*domains
 	return &activityFromDB, nil
 }
 
-func (a activityRepositoryMySQLImpl) DeleteById(id string) (bool, error) {
+func (a activityRepositoryMySQLImpl) DeleteById(id int) (bool, error) {
 	res, err := a.DB.Exec("DELETE FROM activities WHERE activity_id = ?", id)
 	if err != nil {
 		return false, err
@@ -44,7 +44,7 @@ func (a activityRepositoryMySQLImpl) DeleteById(id string) (bool, error) {
 	return true, nil
 }
 
-func (a activityRepositoryMySQLImpl) GetById(id string) (*domains.Activity, error) {
+func (a activityRepositoryMySQLImpl) GetById(id int) (*domains.Activity, error) {
 	stmt, err := a.DB.Prepare("SELECT * FROM activities WHERE activity_id = ?")
 	if err != nil {
 		return nil, err

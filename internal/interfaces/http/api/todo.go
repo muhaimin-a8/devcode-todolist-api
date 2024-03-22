@@ -4,8 +4,10 @@ import (
 	"devcode-todolist-api/internal/domains"
 	"devcode-todolist-api/internal/dtos"
 	"encoding/json"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 func RegisterTodoController(router fiber.Router, validate *validator.Validate, usecase domains.TodoUseCase) {
@@ -24,7 +26,7 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 			})
 
 			res.SetBody(data)
-			res.SetStatusCode(400)
+			res.SetStatusCode(404)
 
 			return nil
 		}
@@ -32,10 +34,16 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		err = validate.Struct(req)
 		if err != nil {
 			// failed to validate request body
-			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: err.Error(),
-			})
+			response := dtos.Response{
+				Status:  "Bad Request",
+				Message: "activity_group_id cannot be null",
+			}
+
+			if req.Title == "" {
+				response.Message = "title cannot be null"
+			}
+
+			data, _ := json.Marshal(response)
 
 			res.SetBody(data)
 			res.SetStatusCode(400)
@@ -56,7 +64,7 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to create new todo",
 			Data:    todo,
 		})
@@ -71,25 +79,25 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		activityId := ctx.Query("activity_group_id", "-1")
+		activityId, _ := strconv.Atoi(ctx.Query("activity_group_id", "-1"))
 
-		isActivityExist, todos, err := usecase.GetAllByActivityId(activityId)
+		_, todos, err := usecase.GetAllByActivityId(activityId)
 		if err != nil {
 			return err
 		}
-		if !isActivityExist {
-			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "activity not found",
-			})
-
-			res.SetBody(data)
-			res.SetStatusCode(404)
-			return nil
-		}
+		//if !isActivityExist {
+		//	data, _ := json.Marshal(dtos.Response{
+		//		Status:  "failed",
+		//		Message: "activity not found",
+		//	})
+		//
+		//	res.SetBody(data)
+		//	res.SetStatusCode(404)
+		//	return nil
+		//}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to get list todo",
 			Data:    todos,
 		})
@@ -104,7 +112,7 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		id := ctx.Params("id", "-1")
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
 		todo, err := usecase.GetById(id)
 		if err != nil {
 			return err
@@ -112,8 +120,8 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 
 		if todo.Title == "" {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "todos not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Todo with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -123,7 +131,7 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to get todos",
 			Data:    todo,
 		})
@@ -138,7 +146,7 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		res := ctx.Response()
 		res.Header.Set("Content-Type", "application/json")
 
-		id := ctx.Params("id", "-1")
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
 		isDeleted, err := usecase.DeleteById(id)
 		if err != nil {
 			return err
@@ -146,8 +154,8 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 
 		if !isDeleted {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "todos not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Todo with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -157,8 +165,9 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to delete todos",
+			Data:    struct{}{},
 		})
 
 		res.SetBody(data)
@@ -200,12 +209,12 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 			return nil
 		}
 
-		id := ctx.Params("id", "-1")
-		isUpdated, activity, _ := usecase.UpdateById(id, req)
+		id, _ := strconv.Atoi(ctx.Params("id", "-1"))
+		isUpdated, todo, _ := usecase.UpdateById(id, req)
 		if !isUpdated {
 			data, _ := json.Marshal(dtos.Response{
-				Status:  "failed",
-				Message: "todo not found",
+				Status:  "Not Found",
+				Message: fmt.Sprintf("Todo with ID %d Not Found", id),
 			})
 
 			res.SetBody(data)
@@ -214,9 +223,9 @@ func RegisterTodoController(router fiber.Router, validate *validator.Validate, u
 		}
 
 		data, _ := json.Marshal(dtos.Response{
-			Status:  "success",
+			Status:  "Success",
 			Message: "success to update todo",
-			Data:    activity,
+			Data:    todo,
 		})
 
 		res.SetBody(data)

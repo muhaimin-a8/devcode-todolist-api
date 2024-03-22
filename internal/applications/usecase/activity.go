@@ -10,7 +10,7 @@ type activityUseCaseImpl struct {
 	repository domains.ActivityRepository
 }
 
-func (a *activityUseCaseImpl) UpdateById(id string, req *dtos.ActivityUpdateRequest) (isUpdated bool, res *dtos.ActivityResponse, err error) {
+func (a *activityUseCaseImpl) UpdateById(id int, req *dtos.ActivityUpdateRequest) (isUpdated bool, res *dtos.ActivityResponse, err error) {
 	activityFromDB, err := a.repository.GetById(id)
 	if activityFromDB.Title == "" {
 		return false, nil, nil
@@ -43,11 +43,11 @@ func (a *activityUseCaseImpl) UpdateById(id string, req *dtos.ActivityUpdateRequ
 	}, nil
 }
 
-func (a *activityUseCaseImpl) DeleteById(id string) (isDeleted bool, err error) {
+func (a *activityUseCaseImpl) DeleteById(id int) (isDeleted bool, err error) {
 	return a.repository.DeleteById(id)
 }
 
-func (a *activityUseCaseImpl) GetById(id string) (res *dtos.ActivityResponse, err error) {
+func (a *activityUseCaseImpl) GetById(id int) (res *dtos.ActivityResponse, err error) {
 	activityFromDB, err := a.repository.GetById(id)
 	if err != nil {
 		return nil, err
