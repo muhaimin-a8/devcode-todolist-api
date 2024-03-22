@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  mysql:
+  db:
     container_name: 'mysql'
     image: mysql:5.7
     environment:
@@ -11,20 +11,21 @@ services:
       - MYSQL_DATABASE=${MYSQL_DBNAME}
     ports:
       - "3306:3306"
-#  node_backend:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    restart: unless-stopped
-#    environment:
-#      MYSQL_DBNAME: contact-manager
-#      MYSQL_USER: root
-#      MYSQL_PASSWORD: 123123
-#      MYSQL_HOST: db
-#    volumes:
-#      - ./:/nodejs_hello
-#    ports:
-#      - "3030:3030"
-#    depends_on:
-#      - db
+  
+  backend:
+    container_name: 'go_backend'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DBNAME=${MYSQL_DBNAME}
+      - MYSQL_PORT=${MYSQL_PORT}
+    ports:
+      - "3030:3030"
+    depends_on:
+      - db
 
